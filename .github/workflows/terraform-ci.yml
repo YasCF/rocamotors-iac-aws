@@ -103,6 +103,12 @@ jobs:
           terraform init -reconfigure
           terraform apply -auto-approve
 
+      - name: Mostrar URL pública del LoadBalancer
+        working-directory: ${{ env.TF_DIR }}
+        run: |
+          hostname=$(terraform output -raw roca_web_endpoint || echo "No disponible aún")
+          echo "::notice::🌍 URL Pública: http://$hostname"
+
   destroy:
     if: ${{ github.event.inputs.action == 'destroy' }}
     runs-on: ubuntu-latest
