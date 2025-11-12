@@ -15,5 +15,5 @@ output "sns_topic_arn" {
 }
 output "roca_web_endpoint" {
   description = "DNS público del Load Balancer"
-  value       = aws_lb.this.dns_name
+  value       = module.alb.alb_dns_name
 }
