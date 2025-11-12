@@ -103,6 +103,9 @@ jobs:
           terraform init -reconfigure
           terraform apply -auto-approve
       
+      - name: Actualizar kubeconfig
+        run: aws eks update-kubeconfig --region us-east-1 --name roca-eks
+
       - name: Mostrar URL pública del Service
         run: |
           set +e
