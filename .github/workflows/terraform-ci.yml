@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - init
+          - validate
           - plan
           - apply
           - all
@@ -19,11 +20,14 @@ env:
   TF_DIR: ./Terraform
 
 jobs:
+  # =====================================================
+  # 1. Inicialización del entorno Terraform
+  # =====================================================
   init:
     if: ${{ github.event.inputs.action == 'init' || github.event.inputs.action == 'all' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout del repositorio
         uses: actions/checkout@v4
 
       - name: Configurar credenciales AWS
@@ -39,16 +43,19 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Terraform Init
+      - name: Ejecutar Terraform Init
         working-directory: ${{ env.TF_DIR }}
         run: terraform init -reconfigure
 
-  plan:
-    if: ${{ github.event.inputs.action == 'plan' || github.event.inputs.action == 'all' }}
+  # =====================================================
+  # 2. Validación de la Infraestructura como Código
+  # =====================================================
+  validate:
+    if: ${{ github.event.inputs.action == 'validate' || github.event.inputs.action == 'all' }}
     needs: init
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout del repositorio
         uses: actions/checkout@v4
 
       - name: Configurar credenciales AWS
@@ -63,14 +70,42 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
-          
-      - name: Terraform Validate
+
+      - name: Verificar formato de código
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform fmt -check -recursive
+
+      - name: Validar sintaxis y configuración
         working-directory: ${{ env.TF_DIR }}
         run: |
           terraform init -reconfigure
           terraform validate
 
-      - name: Terraform Plan
+  # =====================================================
+  # 3. Planificación de cambios
+  # =====================================================
+  plan:
+    if: ${{ github.event.inputs.action == 'plan' || github.event.inputs.action == 'all' }}
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Generar plan de ejecución
         working-directory: ${{ env.TF_DIR }}
         run: |
           terraform init -reconfigure
@@ -82,12 +117,15 @@ jobs:
           name: terraform-plan
           path: ${{ env.TF_DIR }}/tfplan.out
 
+  # =====================================================
+  # 4. Despliegue automático (Apply)
+  # =====================================================
   apply:
     if: ${{ github.event.inputs.action == 'apply' || github.event.inputs.action == 'all' }}
     needs: plan
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout del repositorio
         uses: actions/checkout@v4
 
       - name: Configurar credenciales AWS
@@ -103,7 +141,7 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Terraform Apply
+      - name: Aplicar infraestructura (Terraform Apply)
         working-directory: ${{ env.TF_DIR }}
         run: |
           terraform init -reconfigure
@@ -111,51 +149,51 @@ jobs:
       
       - name: Actualizar kubeconfig del EKS
         run: |
-          echo "🔄 Actualizando configuración del cluster..."
+          echo "Actualizando configuración del cluster..."
           CLUSTER_NAME="roca-eks"
           REGION="us-east-1"
-
-          # Verificar si el cluster existe antes de actualizar el kubeconfig
           if aws eks describe-cluster --name "$CLUSTER_NAME" --region "$REGION" >/dev/null 2>&1; then
-            echo "✅ Cluster encontrado: $CLUSTER_NAME"
+            echo "Cluster encontrado: $CLUSTER_NAME"
             aws eks update-kubeconfig --region "$REGION" --name "$CLUSTER_NAME"
           else
-            echo "⚠️ No se encontró el cluster $CLUSTER_NAME en la región $REGION"
+            echo "No se encontró el cluster $CLUSTER_NAME en la región $REGION"
             exit 1
           fi
 
       - name: Esperar que EKS esté disponible
         run: |
-          echo "⏳ Esperando que la API de EKS responda..."
+          echo "Esperando que la API de EKS responda..."
           for i in {1..10}; do
             if kubectl get nodes >/dev/null 2>&1; then
-              echo "✅ EKS disponible."
+              echo "EKS disponible."
               break
             else
-              echo "Reintentando en 30s ($i/10)..."
-              sleep 30
+              echo "Reintentando en 5s ($i/10)..."
+              sleep 5
             fi
           done
 
       - name: Mostrar URL pública del Service
         run: |
           set +e
-          echo "🌍 Buscando URL del LoadBalancer..."
+          echo "Buscando URL del LoadBalancer..."
           hostname=$(kubectl get svc roca-web-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
           if [ -z "$hostname" ]; then
-            echo "::notice::🌍 URL Pública: No disponible aún (el LoadBalancer está en creación)"
+            echo "::notice::URL Pública: No disponible aún (el LoadBalancer está en creación)"
           else
-            echo "::notice::🌍 URL Pública: http://${hostname}"
-            echo "🔗 URL completa: http://${hostname}"
+            echo "::notice::URL Pública: http://${hostname}"
+            echo "URL completa: http://${hostname}"
           fi
           exit 0
 
-
+  # =====================================================
+  # 5. Destrucción controlada de la infraestructura
+  # =====================================================
   destroy:
     if: ${{ github.event.inputs.action == 'destroy' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout del repositorio
         uses: actions/checkout@v4
 
       - name: Configurar credenciales AWS
@@ -176,3 +214,4 @@ jobs:
         run: |
           terraform init -reconfigure
           terraform destroy -auto-approve
+
