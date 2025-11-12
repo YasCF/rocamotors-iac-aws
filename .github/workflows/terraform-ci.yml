@@ -106,8 +106,14 @@ jobs:
       - name: Mostrar URL pública del LoadBalancer
         working-directory: ${{ env.TF_DIR }}
         run: |
-          hostname=$(terraform output -raw roca_web_endpoint || echo "No disponible aún")
-          echo "::notice::🌍 URL Pública: http://$hostname"
+          set +e
+          hostname=$(terraform output -raw roca_web_endpoint 2>/dev/null)
+          if [ -z "$hostname" ]; then
+            echo "::notice::🌍 URL Pública: No disponible aún"
+          else
+            echo "::notice::🌍 URL Pública: http://$hostname"
+          fi
+          exit 0
 
   destroy:
     if: ${{ github.event.inputs.action == 'destroy' }}
