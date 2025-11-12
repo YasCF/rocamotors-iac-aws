@@ -2,147 +2,211 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Vende tu auto | RoCa Motors</title>
-  <link rel="icon" href="img/logo.png" type="image/png">
-<style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: radial-gradient(circle at top, #111, #000);
-    color: #f2f2f2;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-  }
-  header {
-    background-color: #111;
-    padding: 30px;
-    border-bottom: 2px solid #a30000;
-  }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toyota Chile - Vehículos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #fff;
+      color: #222;
+    }
 
-  header img {
-    width: 150px;
-    display: block;
-    margin: 0 auto;
-  }
+    header {
+      background-color: #111;
+      padding: 10px 20px;
+      color: white;
+      display: flex;
+      align-items: center;
+    }
 
-  h1 {
-    color: #e31b23;
-    margin-top: 15px;
-    font-size: 2em;
-  }
+    header img {
+      height: 70px;
+      margin-right: 15px;
+    }
 
-  h2 {
-    color: #ff4444;
-    margin-top: 50px;
-    font-size: 1.5em;
-  }
+    h1 {
+      text-align: center;
+      margin: 40px 0 10px;
+    }
 
-  p {
-    color: #ddd;
-    font-size: 1.2em;
-    max-width: 800px;
-    margin: 20px auto;
-  }
+    /* ======= FILTROS Y RANGO ======= */
+    .filtros-container {
+      text-align: center;
+      margin: 20px 0;
+    }
 
-  form {
-    margin: 40px auto;
-    padding: 30px;
-    width: 60%;
-    max-width: 600px;
-    background-color: #1a1a1a;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(227, 27, 35, 0.4);
-    border: 1px solid #a30000;
-  }
+    .rango-precios {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
 
-  label {
-    display: block;
-    margin-top: 15px;
-    text-align: left;
-    color: #ccc;
-    font-weight: 500;
-  }
+    .rango-precios input[type="range"] {
+      width: 50%;
+      accent-color: #d50000;
+    }
 
-  input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    border: none;
-    border-radius: 5px;
-    background-color: #333;
-    color: #fff;
-    font-size: 1em;
-  }
+    .rango-precios span {
+      font-weight: bold;
+    }
 
-  button {
-    margin-top: 25px;
-    width: 100%;
-    padding: 12px;
-    background-color: #a30000;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1.1em;
-    cursor: pointer;
-    transition: 0.3s;
-  }
+    .filtros {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
 
-  button:hover {
-    background-color: #ff1c1c;
-  }
+    select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
 
-  footer {
-    margin-top: 60px;
-    padding: 20px;
-    font-size: 1em;
-    background-color: #111;
-    border-top: 1px solid #a30000;
-  }
+    /* ======= GRID DE VEHÍCULOS ======= */
+    .vehiculos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      max-width: 1000px;
+      margin: 0 auto;
+      gap: 25px;
+      padding: 0 30px 50px;
+    }
 
-  ul, ol {
-    text-align: left;
-    display: inline-block;
-    margin: 20px auto;
-    padding-left: 40px;
-    font-size: 1.1em;
-    line-height: 1.6;
-  }
-</style>
+    .card {
+      border: 1px solid #eee;
+      border-radius: 10px;
+      text-align: center;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+    }
+
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: contain;
+      border-radius: 8px;
+      background-color: #f1f1f1;
+    }
+
+    .card h3 {
+      margin-top: 15px;
+      font-size: 18px;
+    }
+
+    .precio {
+      font-weight: bold;
+      margin-top: 10px;
+      color: #333;
+    }
+
+    footer {
+      background-color: #000;
+      color: #fff;
+      text-align: center;
+      font-size: 13px;
+      padding: 20px;
+    }
+
+    footer a {
+      color: #fff;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <img src="img/logo.png" alt="RoCa Motors Logo">
-    <h1>Vende tu auto con RoCa Motors</h1>
+    <img src="../img/logo.png" alt="RoCa logo">
+    <strong>RoCa Motors</strong>
   </header>
 
-  <p>Proceso seguro, pago inmediato y sin complicaciones.</p>
+  <h1>Mira, conoce y compara todos los vehículos</h1>
 
-  <form>
-    <label>Marca:</label>
-    <input type="text" name="marca" placeholder="Ej: Toyota">
-    <label>Modelo:</label>
-    <input type="text" name="modelo" placeholder="Ej: Corolla">
-    <label>Año:</label>
-    <input type="text" name="año" placeholder="Ej: 2020">
-    <button type="submit">Comenzar</button>
-  </form>
+  <div class="filtros-container">
+    <div class="rango-precios">
+      <span>$11.490.000</span>
+      <input type="range" min="11490000" max="63990000" value="11490000">
+      <span>$63.990.000</span>
+    </div>
 
-  <h2>¿Por qué RoCa Motors?</h2>
-  <ul>
-    <li>🔒 100% Seguro</li>
-    <li>💸 Pago inmediato</li>
-    <li>📄 Sin papeleo innecesario</li>
-  </ul>
+    <div class="filtros">
+      <select><option>Tipo de vehículo</option></select>
+      <select><option>Modelos</option></select>
+      <select><option>Combustible</option></select>
+      <label><input type="checkbox"> Solo híbridos</label>
+    </div>
+  </div>
 
-  <h2>¿Cómo funciona?</h2>
-  <ol>
-    <li>Obtén una oferta personalizada</li>
-    <li>Agenda una inspección gratuita</li>
-    <li>Recibe tu pago al instante</li>
-  </ol>
+  <section class="vehiculos">
+    <div class="card">
+      <img src="../img/auto-1.png" alt="Raize">
+      <h3>Raize</h3>
+      <p>Fácil de conducir, simple de disfrutar</p>
+      <p class="precio">Desde $11.490.000</p>
+    </div>
+
+    <div class="card">
+      <img src="../img/auto-2.png" alt="Yaris">
+      <h3>Yaris</h3>
+      <p>Completamente equipado y eficiente</p>
+      <p class="precio">Desde $12.990.000</p>
+    </div>
+
+    <div class="card">
+      <img src="../img/auto-3.png" alt="Yaris Cross">
+      <h3>Yaris Cross</h3>
+      <p>Todo eso y más</p>
+      <p class="precio">Desde $19.790.000</p>
+    </div>
+
+    <div class="card">
+      <img src="../img/auto-4.png" alt="Corolla Cross Híbrido">
+      <h3>Corolla Cross Híbrido</h3>
+      <p>La tradición de innovar</p>
+      <p class="precio">Desde $26.990.000</p>
+    </div>
+
+    <div class="card">
+      <img src="../img/auto-5.png" alt="RAV4 Híbrido">
+      <h3>RAV4 Híbrido</h3>
+      <p>Recorriendo los caminos</p>
+      <p class="precio">Desde $30.790.000</p>
+    </div>
+
+    <div class="card">
+      <img src="../img/auto-6.png" alt="Fortuner">
+      <h3>Fortuner</h3>
+      <p>Espacio para la familia</p>
+      <p class="precio">Desde $39.490.000</p>
+    </div>
+
+    <div class="card">
+      <img src="../img/auto-7.png" alt="Hilux GR-S">
+      <h3>Hilux GR-S</h3>
+      <p>Gazoo Racing Sport</p>
+      <p class="precio">Desde $51.690.000</p>
+    </div>
+
+    <div class="card">
+      <img src="../img/auto-8.png" alt="Land Cruiser Prado">
+      <h3>Land Cruiser Prado</h3>
+      <p>La leyenda continúa</p>
+      <p class="precio">Desde $63.990.000</p>
+    </div>
+  </section>
 
   <footer>
-    © 2025 <strong>RoCa Motors</strong> – Innovación y Tecnología Automotriz
+    ©2025 Toyota Chile. Todos los derechos reservados. |
+    <a href="#">Términos y condiciones</a>
   </footer>
 </body>
 </html>
