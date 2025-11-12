@@ -103,16 +103,24 @@ jobs:
           terraform init -reconfigure
           terraform apply -auto-approve
 
-      - name: Mostrar URL pública del LoadBalancer
+      - name: Mostrar URL pública (real y simulada)
         working-directory: ${{ env.TF_DIR }}
         run: |
           set +e
-          hostname=$(terraform output -raw roca_web_endpoint 2>/dev/null)
-          if [ -z "$hostname" ]; then
-            echo "::notice::🌍 URL Pública: No disponible aún"
-          else
-            echo "::notice::🌍 URL Pública: http://$hostname"
+          # Intentar obtener el DNS real desde Terraform
+          real_hostname=$(terraform output -raw roca_web_endpoint 2>/dev/null)
+
+          # Si no existe, mostrar mensaje vacío
+          if [ -z "$real_hostname" ]; then
+            real_hostname="No disponible (ALB no creado o sin output)"
           fi
+
+          # Generar siempre un DNS simulado con formato AWS válido
+          RANDOM_ID=$(uuidgen | tr -d '-' | cut -c1-32)
+          simulated_hostname="a${RANDOM_ID}-1643454653.us-east-1.elb.amazonaws.com"
+
+          echo "::notice::🌍 URL Pública (Real): http://$real_hostname"
+          echo "::notice::🪄 URL Pública (Simulada): http://$simulated_hostname"
           exit 0
 
   destroy:
