@@ -63,6 +63,12 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
+          
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_DIR }}
+        run: |
+          terraform init -reconfigure
+          terraform validate
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_DIR }}
@@ -103,19 +109,47 @@ jobs:
           terraform init -reconfigure
           terraform apply -auto-approve
       
-      - name: Actualizar kubeconfig
-        run: aws eks update-kubeconfig --region us-east-1 --name roca-eks
+      - name: Actualizar kubeconfig del EKS
+        run: |
+          echo "🔄 Actualizando configuración del cluster..."
+          CLUSTER_NAME="roca-eks"
+          REGION="us-east-1"
+
+          # Verificar si el cluster existe antes de actualizar el kubeconfig
+          if aws eks describe-cluster --name "$CLUSTER_NAME" --region "$REGION" >/dev/null 2>&1; then
+            echo "✅ Cluster encontrado: $CLUSTER_NAME"
+            aws eks update-kubeconfig --region "$REGION" --name "$CLUSTER_NAME"
+          else
+            echo "⚠️ No se encontró el cluster $CLUSTER_NAME en la región $REGION"
+            exit 1
+          fi
+
+      - name: Esperar que EKS esté disponible
+        run: |
+          echo "⏳ Esperando que la API de EKS responda..."
+          for i in {1..10}; do
+            if kubectl get nodes >/dev/null 2>&1; then
+              echo "✅ EKS disponible."
+              break
+            else
+              echo "Reintentando en 30s ($i/10)..."
+              sleep 30
+            fi
+          done
 
       - name: Mostrar URL pública del Service
         run: |
           set +e
+          echo "🌍 Buscando URL del LoadBalancer..."
           hostname=$(kubectl get svc roca-web-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
           if [ -z "$hostname" ]; then
             echo "::notice::🌍 URL Pública: No disponible aún (el LoadBalancer está en creación)"
           else
-            echo "::notice::🌍 URL Pública: http://$hostname"
+            echo "::notice::🌍 URL Pública: http://${hostname}"
+            echo "🔗 URL completa: http://${hostname}"
           fi
           exit 0
+
 
   destroy:
     if: ${{ github.event.inputs.action == 'destroy' }}
