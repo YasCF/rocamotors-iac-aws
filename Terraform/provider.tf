@@ -24,7 +24,7 @@ provider "aws" {
 }
 
 resource "time_sleep" "wait_for_cluster" {
-  depends_on = [module.eks]
+  depends_on      = [module.eks]
   create_duration = "60s"
 }
 
