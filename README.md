@@ -67,9 +67,8 @@ Implementar un entorno funcional que permita demostrar:
 │   ├── img/
 │   │   └── logo.png
 │   ├── Dockerfile                  # Imagen Docker para desplegar en EKS
-│   ├── index.html                  # Contenido de la web
-│   └── .gitignore
-│
+│   └──index.html                  # Contenido de la web
+├── .gitignore
 └── README.md                       # Documento principal del proyecto
 ```
 ## **Backend remoto (S3)**
