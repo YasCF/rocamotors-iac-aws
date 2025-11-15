@@ -37,25 +37,40 @@ Implementar un entorno funcional que permita demostrar:
 
 ## **Estructura del Repositorio**
 
-rocamotors-iac/
-├── modules/
-│ ├── vpc/
-│ ├── eks/
-│ ├── alb/
-│ ├── webapp/
-│ └── sns/
-├── web/
-│ ├── Dockerfile
-│ ├── index.html
-│ └── assets/
-├── main.tf
-├── variables.tf
-├── outputs.tf
-├── providers.tf
-└── .github/
-└── workflows/
-├── terraform.yml # CI/CD principal (plan & apply)
-└── terraform-destroy.yml # Pipeline de destrucción controlada
+├── github/
+│   └── workflows/
+│       └── terraform-ci.yml        # Pipeline CI/CD para Terraform (GitHub Actions)
+│
+├── Terraform/
+│   ├── modules/                    # Módulos reutilizables IaC
+│   │   ├── alb/                    # Módulo para Application Load Balancer
+│   │   │   ├── main.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── variables.tf
+│   │   ├── cloudwatch/             # Módulo de logging y métricas
+│   │   ├── eks/                    # Módulo para crear clúster EKS y node groups
+│   │   ├── sns/                    # Módulo de notificaciones SNS
+│   │   └── vpc/                    # Módulo para red VPC y subnets
+│   │
+│   ├── webapp/                     # Módulo para el deployment de la app en Kubernetes
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   │
+│   ├── main.tf                     # Infraestructura completa (orquestación de módulos)
+│   ├── outputs.tf                  # Salidas principales (DNS, ALB, cluster, etc.)
+│   ├── provider.tf                 # Configuración de proveedor AWS
+│   ├── terraform.tfvars            # Valores específicos del entorno
+│   └── variables.tf                # Variables globales
+│
+├── web/                            # Aplicación simple tipo landing page
+│   ├── img/
+│   │   └── logo.png
+│   ├── Dockerfile                  # Imagen Docker para desplegar en EKS
+│   ├── index.html                  # Contenido de la web
+│   └── .gitignore
+│
+└── README.md                       # Documento principal del proyecto
 ```
 ## **Backend remoto (S3)**
 
